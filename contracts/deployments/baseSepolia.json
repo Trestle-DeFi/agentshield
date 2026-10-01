@@ -1,0 +1,8 @@
+{
+  "network": "baseSepolia",
+  "contract": "AgentShieldDemoEscrow",
+  "address": "0x4eC3777B16FC7Da556B451679A10A8fDFC5Fd48D",
+  "usdc": "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
+  "deployer": "0x9280b24542a52cEE54a78dB65A497D8BeC4BAB94",
+  "deployedAt": "2026-10-01T21:36:06.459Z"
+}

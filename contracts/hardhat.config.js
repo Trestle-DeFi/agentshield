@@ -4,7 +4,7 @@ require('dotenv').config();
 const pk = process.env.DEPLOYER_PRIVATE_KEY || process.env.PRIVATE_KEY;
 
 module.exports = {
-  solidity: '0.8.24',
+  solidity: '0.8.37',
   networks: {
     baseSepolia: {
       url: process.env.BASE_SEPOLIA_RPC_URL || process.env.BASE_SEPOLIA_RPC || 'https://sepolia.base.org',
@@ -21,5 +21,8 @@ module.exports = {
       accounts: pk ? [pk] : [],
       chainId: 80002,
     },
+  },
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_API_KEY,
   },
 };
