@@ -1,0 +1,45 @@
+name: Deploy Contracts (testnet)
+
+on:
+  workflow_dispatch:
+    inputs:
+      network:
+        description: 'Hardhat network to deploy to'
+        required: true
+        default: 'baseSepolia'
+        type: choice
+        options:
+          - baseSepolia
+          - arbitrumSepolia
+          - amoy
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # Fails with a clear message until contracts land
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check contracts exist
+        id: check
+        run: |
+          if [ ! -f contracts/package.json ]; then
+            echo "::error::contracts/ not scaffolded yet — Dev B must land Hardhat project first"
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install & deploy
+        working-directory: contracts
+        env:
+          # TESTNET-ONLY deployer key. Never a key holding mainnet funds.
+          DEPLOYER_PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
+          BASE_SEPOLIA_RPC_URL: ${{ secrets.BASE_SEPOLIA_RPC_URL }}
+          ARBITRUM_SEPOLIA_RPC_URL: ${{ secrets.ARBITRUM_SEPOLIA_RPC_URL }}
+          AMOY_RPC_URL: ${{ secrets.AMOY_RPC_URL }}
+        run: |
+          npm ci
+          npx hardhat run scripts/deploy.js --network ${{ inputs.network }}

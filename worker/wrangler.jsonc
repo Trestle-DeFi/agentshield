@@ -1,0 +1,37 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "agentshield-demo",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-01",
+
+  "vars": {
+    "NETWORK": "base-sepolia",
+    // TODO: replace with the real payment receiver wallet before M1
+    "PAY_TO_ADDRESS": "0x0000000000000000000000000000000000000000"
+  },
+
+  "kv_namespaces": [
+    {
+      "binding": "KV",
+      "id": "aa637fded759496e863d02a1a73303ba",
+      "preview_id": "aa637fded759496e863d02a1a73303ba"
+    }
+  ],
+
+  "queues": {
+    "producers": [
+      {
+        "binding": "QUEUE",
+        "queue": "agentshield"
+      }
+    ]
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "agentshield-db",
+      "database_id": "29e211d5-7e19-46eb-97f4-e76dc864fb77"
+    }
+  ]
+}
