@@ -10,8 +10,8 @@ const USDC = {
 };
 
 async function main() {
-  if (!process.env.DEPLOYER_PRIVATE_KEY) {
-    throw new Error('DEPLOYER_PRIVATE_KEY not set (testnet-only deployer required)');
+  if (!process.env.DEPLOYER_PRIVATE_KEY && !process.env.PRIVATE_KEY) {
+    throw new Error('DEPLOYER_PRIVATE_KEY (or PRIVATE_KEY in .env) not set — testnet-only deployer required');
   }
   const usdc = USDC[network.name];
   if (!usdc) throw new Error(`no USDC address configured for network ${network.name}`);
