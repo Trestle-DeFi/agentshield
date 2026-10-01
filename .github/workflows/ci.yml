@@ -30,15 +30,29 @@ jobs:
   contracts-test:
     name: Hardhat tests
     runs-on: ubuntu-latest
-    # Skips (green) until Dev B lands contracts/package.json
-    if: ${{ hashFiles('contracts/package.json') != '' }}
-    defaults:
-      run:
-        working-directory: contracts
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+
+      # hashFiles is invalid in job-level if; gate via step outputs instead
+      - name: Check contracts exist
+        id: check
+        run: |
+          if [ -f contracts/package.json ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "contracts/ not scaffolded yet — skipping (Dev B lands this)"
+          fi
+
+      - if: steps.check.outputs.exists == 'true'
+        uses: actions/setup-node@v4
         with:
           node-version: 24
-      - run: npm ci
-      - run: npx hardhat test
+
+      - if: steps.check.outputs.exists == 'true'
+        working-directory: contracts
+        run: npm ci
+
+      - if: steps.check.outputs.exists == 'true'
+        working-directory: contracts
+        run: npx hardhat test
