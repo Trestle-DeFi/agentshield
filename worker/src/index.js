@@ -1,9 +1,12 @@
-// AgentShield demo worker — M0 skeleton
+// AgentShield demo worker — M1
 // GET  -> 402 x402 payment challenge
-// POST + X-PAYMENT header -> verification not implemented yet (M1)
-// Replaces the default Hello World on agentshield-demo.j-mk644.workers.dev
+// POST + X-PAYMENT: <txHash> -> verify USDC transfer on Base Sepolia,
+//                          record in D1 (replay protection), return resource
+// Note: X-PAYMENT currently carries a raw tx hash for demo simplicity;
+//       M2 aligns the payload with the exact x402 spec format.
+import { verifyUsdcTransfer } from './usdc.js';
 
-const USDC_BASE_SEPOLIA = '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
+const MIN_AMOUNT = 10000n; // 0.01 USDC (6 decimals) — keep in sync with GET challenge
 
 const challenge = (resource, payTo) => ({
   x402Version: 1,
@@ -11,8 +14,8 @@ const challenge = (resource, payTo) => ({
     {
       scheme: 'exact',
       network: 'base-sepolia',
-      maxAmountRequired: '10000', // 0.01 USDC (6 decimals)
-      asset: USDC_BASE_SEPOLIA,
+      maxAmountRequired: MIN_AMOUNT.toString(),
+      asset: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
       payTo,
       resource,
       description: 'AgentShield demo: paid resource',
@@ -21,6 +24,8 @@ const challenge = (resource, payTo) => ({
   ],
   error: null,
 });
+
+const denied = (reason) => Response.json({ error: reason }, { status: 403 });
 
 export default {
   async fetch(request, env) {
@@ -35,15 +40,33 @@ export default {
     }
 
     if (request.method === 'POST') {
-      const payment = request.headers.get('X-PAYMENT');
-      if (!payment) {
+      const txHash = request.headers.get('X-PAYMENT');
+      if (!txHash) {
         return Response.json(challenge(url.pathname, payTo), { status: 402 });
       }
-      // M1: verify Base Sepolia USDC payment proof, record in DB (D1), then fulfill
-      return Response.json(
-        { error: 'payment verification not implemented (M1)' },
-        { status: 501 }
-      );
+
+      const proof = await verifyUsdcTransfer(env, txHash, payTo, MIN_AMOUNT);
+      if (!proof.ok) return denied(proof.reason);
+
+      // Replay protection: one tx = one fulfillment. INSERT OR IGNORE wins the race.
+      const claim = await env.DB.prepare(
+        'INSERT OR IGNORE INTO payments (tx_hash, payer, amount) VALUES (?1, ?2, ?3)'
+      )
+        .bind(txHash.toLowerCase(), proof.from, proof.amount)
+        .run();
+
+      if (!claim.meta.changes) {
+        return denied('payment already redeemed');
+      }
+
+      return Response.json({
+        ok: true,
+        resource: url.pathname,
+        tx: txHash.toLowerCase(),
+        payer: proof.from,
+        amount: proof.amount,
+        content: 'Paid content delivered. AgentShield demo M1 complete.',
+      });
     }
 
     return new Response('Method not allowed', { status: 405 });
