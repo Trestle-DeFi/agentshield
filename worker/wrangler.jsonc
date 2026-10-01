@@ -6,8 +6,7 @@
 
   "vars": {
     "NETWORK": "base-sepolia",
-    // TODO: replace with the real payment receiver wallet before M1
-    "PAY_TO_ADDRESS": "0x0000000000000000000000000000000000000000"
+    "PAY_TO_ADDRESS": "0xCeb2c47f8B926806BbaDA35cF0d4C0014132e2BA"
   },
 
   "kv_namespaces": [
