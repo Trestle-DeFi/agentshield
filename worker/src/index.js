@@ -3,7 +3,7 @@
 // POST + X-PAYMENT: <txHash> -> verify USDC transfer on Base Sepolia,
 //                          record in D1 (replay protection), return resource
 // Note: X-PAYMENT currently carries a raw tx hash for demo simplicity;
-//       M2 aligns the payload with the exact x402 spec format.
+//       spec-format x402 payment payload = Phase A (productionize handler).
 import { verifyUsdcTransfer } from './usdc.js';
 
 const MIN_AMOUNT = 10000n; // 0.01 USDC (6 decimals) — keep in sync with GET challenge
