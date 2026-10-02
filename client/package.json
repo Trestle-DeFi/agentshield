@@ -1,0 +1,13 @@
+{
+  "name": "agentshield-client",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "challenge": "node agent.mjs challenge",
+    "buy": "node agent.mjs buy",
+    "redeem": "node agent.mjs redeem"
+  },
+  "dependencies": {
+    "ethers": "^6.13.0"
+  }
+}
